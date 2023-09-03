@@ -9,7 +9,7 @@ from torch.utils.data import Dataset
 
 
 class FrameDataset(Dataset):
-    def __init__(self, frame_source, frame_idx_list, num_frame_in_context, Hp, Wp, sample_size, pad = None):
+    def __init__(self, frame_source, frame_idx_list, num_frame_in_context, Hp, Wp, sample_size, pad = None, flattens_output = False):
         """
         frame_source points to data with the shape (B, 1, H, W)
         """
@@ -19,6 +19,7 @@ class FrameDataset(Dataset):
         self.Hp, self.Wp          = Hp, Wp
         self.sample_size          = sample_size
         self.pad                  = pad
+        self.flattens_output      = flattens_output
 
         self.idx_list = []
         self.update_random_dataset()
@@ -61,6 +62,9 @@ class FrameDataset(Dataset):
         context = context.reshape(B, C, H//Hp, Hp, W//Wp, Wp).swapaxes(3,4)
         context = context.reshape(B * C * H * W // Hp // Wp, Hp, Wp)
 
+        if self.flattens_output:
+            context = context.reshape(-1, Hp * Wp)
+
         # Get the target (context offset by 1)...
         target_min = sample_frame_idx
         target_max = sample_frame_idx + num_frame_in_context + 1
@@ -71,5 +75,8 @@ class FrameDataset(Dataset):
         target = target.reshape(B, C, H//Hp, Hp, W//Wp, Wp).swapaxes(3,4)
         target = target.reshape(B * C * H * W // Hp // Wp, Hp, Wp)
         target = target[1:1 + num_patch]
+
+        if self.flattens_output:
+            target = target.reshape(-1, Hp * Wp)
 
         return context, target
