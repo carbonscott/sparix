@@ -185,7 +185,12 @@ class Transformer(nn.Module):
         super().__init__()
 
         # Embed a patch token...
+        ## tok_size = Hp * Wp
         self.tok_embd_layer = nn.Linear(tok_size, embd_size)    # (B, T, N) -> (B, T, E)
+        ## self.tok_embd_layer = nn.Conv2d(in_channels  = 1,
+        ##                                 out_channels = embd_size,
+        ##                                 kernel_size  = (Hp, Wp),
+        ##                                 stride       = (Hp, Wp))    # (B, T, Hp, Wp) -> (B, T, E)
 
         # Define positional embedding layer to embed each position to a vector space...
         self.pos_embd_layer = nn.Embedding(context_length, embd_size)
@@ -216,9 +221,9 @@ class Transformer(nn.Module):
         """
         N is number of tokens.
         Arguments:
-            x : (B, T)
+            x : (B, T, Hp * Wp)
         """
-        B, T = x.shape
+        _, T, _ = x.shape
 
         # ___/ EMBED ALL NODES \___
         nodes_tok_embd = self.tok_embd_layer(x)    # (B, T) -> (B, T, E)
