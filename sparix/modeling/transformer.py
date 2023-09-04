@@ -252,6 +252,6 @@ class Transformer(nn.Module):
         logits = self.forward(x)    # (B, T, N)
 
         # Look up the logits associated with the last token...
-        last_token_logits = logits[:, -1]
+        last_token_logits = logits[:, -1:]
 
         return last_token_logits
